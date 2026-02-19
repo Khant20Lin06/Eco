@@ -6,6 +6,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   addCartItem,
   addWishlistItem,
+  listCategories,
   listProducts,
   listWishlist,
   type ProductVariant,
@@ -96,6 +97,7 @@ export default function HomeCatalogSection({
   const { accessToken } = useAuthSession();
   const router = useRouter();
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>(ALL_CATEGORY_ID);
+  const [categoryOptions, setCategoryOptions] = useState<HomeCategory[]>(categories);
   const [products, setProducts] = useState<HomeProduct[]>(initialProducts);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -107,14 +109,56 @@ export default function HomeCatalogSection({
     normalizeCurrencyCode(initialCurrency)
   );
   const requestSeqRef = useRef(0);
-  const cacheRef = useRef<Map<string, HomeProduct[]>>(new Map([[ALL_CATEGORY_ID, initialProducts]]));
+  const cacheRef = useRef<Map<string, HomeProduct[]>>(
+    initialProducts.length > 0 ? new Map([[ALL_CATEGORY_ID, initialProducts]]) : new Map()
+  );
+  const loadedCategoryKeysRef = useRef<Set<string>>(
+    initialProducts.length > 0 ? new Set([ALL_CATEGORY_ID]) : new Set()
+  );
 
   useEffect(() => {
-    cacheRef.current.set(ALL_CATEGORY_ID, initialProducts);
+    if (initialProducts.length > 0) {
+      cacheRef.current.set(ALL_CATEGORY_ID, initialProducts);
+      loadedCategoryKeysRef.current.add(ALL_CATEGORY_ID);
+    } else {
+      cacheRef.current.delete(ALL_CATEGORY_ID);
+      loadedCategoryKeysRef.current.delete(ALL_CATEGORY_ID);
+    }
     if (selectedCategoryId === ALL_CATEGORY_ID) {
       setProducts(initialProducts);
     }
   }, [initialProducts, selectedCategoryId]);
+
+  useEffect(() => {
+    if (categories.length > 0) {
+      setCategoryOptions(categories);
+      return;
+    }
+
+    let alive = true;
+    listCategories({ locale })
+      .then((response) => {
+        if (!alive) {
+          return;
+        }
+        setCategoryOptions(
+          response.items.map((item) => ({
+            id: item.id,
+            slug: item.slug,
+            name: item.name || item.en_name || item.mm_name || 'Category'
+          }))
+        );
+      })
+      .catch(() => {
+        if (alive) {
+          setCategoryOptions([]);
+        }
+      });
+
+    return () => {
+      alive = false;
+    };
+  }, [categories, locale]);
 
   useEffect(() => {
     const syncFromCookie = () => {
@@ -164,10 +208,11 @@ export default function HomeCatalogSection({
     const categoryKey = selectedCategoryId || ALL_CATEGORY_ID;
     const seq = requestSeqRef.current + 1;
     requestSeqRef.current = seq;
+    const hasLoaded = loadedCategoryKeysRef.current.has(categoryKey);
     const cached = cacheRef.current.get(categoryKey);
 
-    if (cached) {
-      setProducts(cached);
+    if (hasLoaded) {
+      setProducts(cached ?? []);
       setError(null);
       setLoading(false);
       return undefined;
@@ -189,6 +234,7 @@ export default function HomeCatalogSection({
           .filter((item) => item.status === 'ACTIVE')
           .map(mapProduct);
         cacheRef.current.set(categoryKey, activeItems);
+        loadedCategoryKeysRef.current.add(categoryKey);
         setProducts(activeItems);
       })
       .catch(() => {
@@ -206,7 +252,7 @@ export default function HomeCatalogSection({
     return () => {
       alive = false;
     };
-  }, [selectedCategoryId, limit, reloadToken]);
+  }, [selectedCategoryId, limit, locale, reloadToken]);
 
   function onAddToCart(product: HomeProduct) {
     if (product.variants.length === 0) {
@@ -273,7 +319,7 @@ export default function HomeCatalogSection({
   const selectedCategoryName =
     selectedCategoryId === ALL_CATEGORY_ID
       ? 'All Categories'
-      : categories.find((category) => category.id === selectedCategoryId)?.name ?? 'Category';
+      : categoryOptions.find((category) => category.id === selectedCategoryId)?.name ?? 'Category';
 
   const visibleProducts = useMemo(
     () =>
@@ -285,6 +331,8 @@ export default function HomeCatalogSection({
       }),
     [products, selectedCurrency]
   );
+  const productsToRender = visibleProducts.length > 0 ? visibleProducts : products;
+  const showingCurrencyFallback = visibleProducts.length === 0 && products.length > 0;
 
   return (
     <section className="space-y-5">
@@ -309,7 +357,7 @@ export default function HomeCatalogSection({
             >
               All
             </button>
-            {categories.map((category) => (
+            {categoryOptions.map((category) => (
               <button
                 key={category.id}
                 className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${
@@ -339,6 +387,11 @@ export default function HomeCatalogSection({
         </div>
 
         {notice ? <p className="text-sm text-[#3956b8]">{notice}</p> : null}
+        {showingCurrencyFallback ? (
+          <p className="text-sm text-[#5b6796]">
+            No products in {selectedCurrency} for this category. Showing all currencies.
+          </p>
+        ) : null}
 
         {error ? (
           <div className="surface flex items-center justify-between gap-3 p-4 text-sm text-[#c23046]">
@@ -346,7 +399,9 @@ export default function HomeCatalogSection({
             <button
               className="rounded-lg border border-[#f0b8c2] bg-white px-3 py-1.5 text-xs font-semibold text-[#a51f34]"
               onClick={() => {
-                cacheRef.current.delete(selectedCategoryId);
+                const key = selectedCategoryId || ALL_CATEGORY_ID;
+                cacheRef.current.delete(key);
+                loadedCategoryKeysRef.current.delete(key);
                 setReloadToken((value) => value + 1);
               }}
               type="button"
@@ -356,7 +411,7 @@ export default function HomeCatalogSection({
           </div>
         ) : null}
 
-        {loading && visibleProducts.length === 0 ? (
+        {loading && productsToRender.length === 0 ? (
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
             {Array.from({ length: 4 }).map((_, index) => (
               <div key={`skeleton-${index + 1}`} className="surface animate-pulse overflow-hidden">
@@ -370,9 +425,9 @@ export default function HomeCatalogSection({
               </div>
             ))}
           </div>
-        ) : visibleProducts.length > 0 ? (
+        ) : productsToRender.length > 0 ? (
           <div className={`grid gap-4 transition-opacity duration-200 sm:grid-cols-2 xl:grid-cols-4 ${loading ? 'opacity-70' : 'opacity-100'}`}>
-            {visibleProducts.map((product) => (
+            {productsToRender.map((product) => (
               <article
                 key={product.id}
                 className="surface group overflow-hidden transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_16px_40px_rgba(34,52,122,0.12)]"
