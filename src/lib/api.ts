@@ -84,6 +84,7 @@ export async function apiFetch<T>(path: string, options?: ApiFetchOptions): Prom
 
   const res = await fetch(`${API_URL}${path}`, {
     ...options,
+    cache: options?.cache ?? 'no-store',
     headers,
   });
 

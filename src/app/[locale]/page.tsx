@@ -19,6 +19,9 @@ type HomePageProps = {
   params: { locale: string };
 };
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 type HeroSlide = {
   title: string;
   text: string;
@@ -202,13 +205,17 @@ async function loadHomeData(locale: string) {
     listBlogs({ limit: 12 }),
   ]);
 
-  const categoryItems =
-    categoryRes.status === 'fulfilled' && Array.isArray(categoryRes.value.items)
-      ? categoryRes.value.items
+  const categoryPayload = categoryRes.status === 'fulfilled' ? (categoryRes.value as unknown) : null;
+  const categoryItems = Array.isArray(categoryPayload)
+    ? categoryPayload
+    : Array.isArray((categoryPayload as { items?: unknown } | null)?.items)
+      ? ((categoryPayload as { items: unknown[] }).items)
       : [];
-  const productItems =
-    productRes.status === 'fulfilled' && Array.isArray(productRes.value.items)
-      ? productRes.value.items
+  const productPayload = productRes.status === 'fulfilled' ? (productRes.value as unknown) : null;
+  const productItems = Array.isArray(productPayload)
+    ? productPayload
+    : Array.isArray((productPayload as { items?: unknown } | null)?.items)
+      ? ((productPayload as { items: unknown[] }).items)
       : [];
   const reviewPayload = reviewRes.status === 'fulfilled' ? (reviewRes.value as unknown) : null;
   const reviewItems = Array.isArray(reviewPayload)
@@ -216,9 +223,11 @@ async function loadHomeData(locale: string) {
     : Array.isArray((reviewPayload as { items?: unknown } | null)?.items)
       ? ((reviewPayload as { items: unknown[] }).items)
       : [];
-  const blogItems =
-    blogRes.status === 'fulfilled' && Array.isArray(blogRes.value.items)
-      ? blogRes.value.items
+  const blogPayload = blogRes.status === 'fulfilled' ? (blogRes.value as unknown) : null;
+  const blogItems = Array.isArray(blogPayload)
+    ? blogPayload
+    : Array.isArray((blogPayload as { items?: unknown } | null)?.items)
+      ? ((blogPayload as { items: unknown[] }).items)
       : [];
 
   const mapHomeProduct = (product: ProductItem): HomeProduct => ({
@@ -233,13 +242,28 @@ async function loadHomeData(locale: string) {
     status: product.status
   });
 
-  const categories = categoryItems.map((category) => ({
+  const normalizedCategoryItems = categoryItems as Array<{
+    id: string;
+    name?: string;
+    en_name?: string;
+    mm_name?: string;
+    slug: string;
+  }>;
+  const normalizedProductItems = productItems as ProductItem[];
+  const normalizedBlogItems = blogItems as Array<{
+    id: string;
+    title: string;
+    excerpt: string;
+    coverImage?: string | null;
+  }>;
+
+  const categories = normalizedCategoryItems.map((category) => ({
     id: category.id,
     name: category.name || category.en_name || category.mm_name || 'Category',
     slug: category.slug
   }));
 
-  const initialProducts = productItems
+  const initialProducts = normalizedProductItems
     .filter((item) => item.status === 'ACTIVE')
     .map(mapHomeProduct);
 
@@ -259,7 +283,7 @@ async function loadHomeData(locale: string) {
     };
   });
 
-  const blogs: HomeBlog[] = blogItems.map((post) => ({
+  const blogs: HomeBlog[] = normalizedBlogItems.map((post) => ({
     id: post.id,
     title: post.title,
     excerpt: post.excerpt,
