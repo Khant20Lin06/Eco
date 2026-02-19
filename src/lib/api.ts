@@ -74,12 +74,17 @@ function toQueryString(
 
 export async function apiFetch<T>(path: string, options?: ApiFetchOptions): Promise<T> {
   const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
     ...(options?.headers ? (options.headers as Record<string, string>) : {}),
   };
 
   if (options?.accessToken) {
     headers.Authorization = `Bearer ${options.accessToken}`;
+  }
+
+  const hasBody = options?.body !== undefined && options?.body !== null;
+  const isFormData = typeof FormData !== 'undefined' && options?.body instanceof FormData;
+  if (hasBody && !isFormData && !headers['Content-Type']) {
+    headers['Content-Type'] = 'application/json';
   }
 
   const res = await fetch(`${API_URL}${path}`, {
