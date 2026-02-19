@@ -202,6 +202,25 @@ async function loadHomeData(locale: string) {
     listBlogs({ limit: 12 }),
   ]);
 
+  const categoryItems =
+    categoryRes.status === 'fulfilled' && Array.isArray(categoryRes.value.items)
+      ? categoryRes.value.items
+      : [];
+  const productItems =
+    productRes.status === 'fulfilled' && Array.isArray(productRes.value.items)
+      ? productRes.value.items
+      : [];
+  const reviewPayload = reviewRes.status === 'fulfilled' ? (reviewRes.value as unknown) : null;
+  const reviewItems = Array.isArray(reviewPayload)
+    ? reviewPayload
+    : Array.isArray((reviewPayload as { items?: unknown } | null)?.items)
+      ? ((reviewPayload as { items: unknown[] }).items)
+      : [];
+  const blogItems =
+    blogRes.status === 'fulfilled' && Array.isArray(blogRes.value.items)
+      ? blogRes.value.items
+      : [];
+
   const mapHomeProduct = (product: ProductItem): HomeProduct => ({
     id: product.id,
     title: product.title,
@@ -214,41 +233,38 @@ async function loadHomeData(locale: string) {
     status: product.status
   });
 
-  const categories =
-    categoryRes.status === 'fulfilled'
-      ? categoryRes.value.items.map((category) => ({
-          id: category.id,
-          name: category.name,
-          slug: category.slug
-        }))
-      : [];
+  const categories = categoryItems.map((category) => ({
+    id: category.id,
+    name: category.name || category.en_name || category.mm_name || 'Category',
+    slug: category.slug
+  }));
 
-  const initialProducts =
-    productRes.status === 'fulfilled'
-      ? productRes.value.items
-          .filter((item) => item.status === 'ACTIVE')
-          .map(mapHomeProduct)
-      : [];
+  const initialProducts = productItems
+    .filter((item) => item.status === 'ACTIVE')
+    .map(mapHomeProduct);
 
-  const reviews =
-    reviewRes.status === 'fulfilled'
-      ? reviewRes.value.map((review) => ({
-          id: review.id,
-          rating: review.rating,
-          comment: review.comment?.trim() || 'Great product and smooth order flow.',
-          productId: review.orderItem?.variant?.productId
-        }))
-      : [];
+  const reviews = reviewItems.map((review) => {
+    const item = review as {
+      id: string;
+      rating: number;
+      comment?: string | null;
+      orderItem?: { variant?: { productId?: string } };
+    };
 
-  const blogs: HomeBlog[] =
-    blogRes.status === 'fulfilled'
-      ? blogRes.value.items.map((post) => ({
-          id: post.id,
-          title: post.title,
-          excerpt: post.excerpt,
-          coverImage: post.coverImage,
-        }))
-      : [];
+    return {
+      id: item.id,
+      rating: item.rating,
+      comment: item.comment?.trim() || 'Great product and smooth order flow.',
+      productId: item.orderItem?.variant?.productId
+    };
+  });
+
+  const blogs: HomeBlog[] = blogItems.map((post) => ({
+    id: post.id,
+    title: post.title,
+    excerpt: post.excerpt,
+    coverImage: post.coverImage,
+  }));
 
   return {
     categories,
@@ -269,7 +285,7 @@ export default async function HomePage({ params: { locale } }: HomePageProps) {
 
   const { categories, initialProducts, reviews, blogs, failed } = await loadHomeData(locale);
   const categoryItems = categories.slice(0, 14);
-  const featuredProducts = initialProducts.slice(0, 12);
+  const featuredProducts = initialProducts.slice(0, 24);
   const displayReviews = [...reviews, ...FALLBACK_REVIEW_ITEMS].slice(0, 10);
   const displayBlogs: HomeBlog[] = [...blogs, ...BLOG_FALLBACK_ITEMS].slice(0, 10);
   const reviewSlides = chunkArray(displayReviews, 3);

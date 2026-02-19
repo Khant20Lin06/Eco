@@ -1,6 +1,27 @@
 {
+  "/_not-found": "app/_not-found.js",
+  "/page": "app/page.js",
   "/[locale]/cart/page": "app/[locale]/cart/page.js",
   "/[locale]/chat/page": "app/[locale]/chat/page.js",
+  "/[locale]/checkout/page": "app/[locale]/checkout/page.js",
+  "/[locale]/notifications/page": "app/[locale]/notifications/page.js",
+  "/[locale]/product/[id]/page": "app/[locale]/product/[id]/page.js",
+  "/[locale]/orders/page": "app/[locale]/orders/page.js",
   "/[locale]/page": "app/[locale]/page.js",
-  "/[locale]/notifications/page": "app/[locale]/notifications/page.js"
+  "/[locale]/register/page": "app/[locale]/register/page.js",
+  "/[locale]/products/page": "app/[locale]/products/page.js",
+  "/[locale]/wishlist/page": "app/[locale]/wishlist/page.js",
+  "/[locale]/admin/categories/page": "app/[locale]/admin/categories/page.js",
+  "/[locale]/admin/tags/page": "app/[locale]/admin/tags/page.js",
+  "/[locale]/admin/page": "app/[locale]/admin/page.js",
+  "/[locale]/admin/vendors/page": "app/[locale]/admin/vendors/page.js",
+  "/[locale]/admin/returns/page": "app/[locale]/admin/returns/page.js",
+  "/[locale]/admin/orders/page": "app/[locale]/admin/orders/page.js",
+  "/[locale]/vendor/orders/page": "app/[locale]/vendor/orders/page.js",
+  "/[locale]/vendor/page": "app/[locale]/vendor/page.js",
+  "/[locale]/vendor/returns/page": "app/[locale]/vendor/returns/page.js",
+  "/[locale]/login/page": "app/[locale]/login/page.js",
+  "/[locale]/vendor/products/page": "app/[locale]/vendor/products/page.js",
+  "/[locale]/vendor/shipping/page": "app/[locale]/vendor/shipping/page.js",
+  "/[locale]/verify-email/page": "app/[locale]/verify-email/page.js"
 }
