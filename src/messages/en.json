@@ -1,0 +1,59 @@
+﻿{
+  "app": {
+    "name": "Eco System Order App",
+    "tagline": "Sustainable orders across US and Myanmar."
+  },
+  "nav": {
+    "home": "Home",
+    "products": "Products",
+    "cart": "Cart",
+    "orders": "Orders",
+    "vendor": "Vendor",
+    "admin": "Admin",
+    "login": "Login",
+    "register": "Register",
+    "logout": "Logout"
+  },
+  "cta": {
+    "shop": "Start shopping",
+    "sell": "Become a vendor"
+  },
+  "sections": {
+    "featured": "Featured Categories",
+    "vendor": "Vendor Portal",
+    "admin": "Admin Console"
+  },
+  "auth": {
+    "loginTitle": "Sign in",
+    "loginSubtitle": "Use your account to continue.",
+    "registerTitle": "Create account",
+    "registerSubtitle": "Choose role first, then register. Email verification is required for vendor onboarding.",
+    "verifyTitle": "Verify email",
+    "verifySubtitle": "Enter your verification token. For local dev, token is provided after register/resend.",
+    "email": "Email",
+    "password": "Password",
+    "verifyToken": "Verification token",
+    "role": "Account role",
+    "customer": "Customer",
+    "vendor": "Vendor",
+    "login": "Login",
+    "loggingIn": "Logging in...",
+    "register": "Register",
+    "registering": "Registering...",
+    "verifyAction": "Verify now",
+    "verifying": "Verifying...",
+    "resendVerification": "Resend verification",
+    "sending": "Sending...",
+    "loginFailed": "Login failed. Check your email/password.",
+    "registerFailed": "Register failed. Try another email.",
+    "registerSuccess": "Registered successfully.",
+    "verifySuccess": "Email verified. Redirecting to login...",
+    "verifyFailed": "Verification failed. Check token or resend verification.",
+    "verifyResent": "Verification sent. Check your email.",
+    "verifyTokenGenerated": "New verification token generated for local dev.",
+    "verifyResendFailed": "Resend failed. Check email and try again.",
+    "noAccount": "No account yet?",
+    "hasAccount": "Already have an account?",
+    "needVerify": "Need email verification?"
+  }
+}

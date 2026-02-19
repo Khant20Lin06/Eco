@@ -1,0 +1,114 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+  --bg: #f6f8ff;
+  --panel: #ffffff;
+  --ink: #121633;
+  --subtle: #5d6486;
+  --line: #dbe2ff;
+  --brand: #ff4f6d;
+  --brand-dark: #e63f5e;
+  --accent: #6b8bff;
+  --accent-dark: #4f6df4;
+  --success: #21a366;
+  --danger: #df3f4f;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: var(--font-body), 'Segoe UI', sans-serif;
+  background:
+    radial-gradient(circle at 8% 10%, rgba(255, 79, 109, 0.16) 0%, rgba(255, 79, 109, 0) 35%),
+    radial-gradient(circle at 90% 8%, rgba(107, 139, 255, 0.18) 0%, rgba(107, 139, 255, 0) 38%),
+    linear-gradient(180deg, #f8faff 0%, #eef3ff 100%);
+  color: var(--ink);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin: 0;
+  font-family: var(--font-heading), var(--font-body), sans-serif;
+  color: var(--ink);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+main {
+  width: min(1400px, 100%);
+  margin: 0 auto;
+  padding: 18px 20px 36px;
+}
+
+.surface {
+  border: 1px solid var(--line);
+  background: var(--panel);
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(20, 30, 70, 0.06);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.chip-success {
+  background: rgba(33, 163, 102, 0.13);
+  color: var(--success);
+}
+
+.chip-warn {
+  background: rgba(255, 169, 27, 0.15);
+  color: #b26d00;
+}
+
+.chip-danger {
+  background: rgba(223, 63, 79, 0.13);
+  color: var(--danger);
+}
+
+.btn-primary {
+  border: 1px solid var(--brand-dark);
+  background: linear-gradient(135deg, var(--brand) 0%, #ff7d57 100%);
+  color: #fff;
+}
+
+.btn-primary:hover {
+  filter: brightness(0.96);
+}
+
+.btn-secondary {
+  border: 1px solid var(--accent-dark);
+  background: linear-gradient(135deg, var(--accent) 0%, #4f6df4 100%);
+  color: #fff;
+}
+
+.btn-secondary:hover {
+  filter: brightness(0.96);
+}
+
+@media (max-width: 900px) {
+  main {
+    padding: 14px 14px 28px;
+  }
+}
+
