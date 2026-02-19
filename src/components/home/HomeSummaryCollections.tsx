@@ -45,7 +45,7 @@ export default function HomeSummaryCollections({
     let alive = true;
     Promise.all([
       listCategories({ locale }),
-      listProducts({ limit: 64, locale })
+      listProducts({ limit: 50, locale })
     ])
       .then(([categoryRes, productRes]) => {
         if (!alive) {

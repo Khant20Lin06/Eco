@@ -155,7 +155,7 @@ export default function HomeReviewsBlogs({ locale }: HomeReviewsBlogsProps) {
     Promise.all([
       listReviews(),
       listBlogs({ limit: 12 }),
-      listProducts({ limit: 64, locale })
+      listProducts({ limit: 50, locale })
     ])
       .then(([reviewRes, blogRes, productRes]) => {
         if (!alive) {
