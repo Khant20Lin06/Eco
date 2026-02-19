@@ -1,6 +1,6 @@
 import { AUTH_ACCESS_COOKIE, AUTH_ROLE_COOKIE } from './auth-shared';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://ecoapi-1.onrender.com/api/v1';
 
 type ApiFetchOptions = RequestInit & {
   accessToken?: string;
