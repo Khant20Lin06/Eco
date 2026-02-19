@@ -321,20 +321,13 @@ export default function ProductsPage({ params: { locale } }: ProductsPageProps) 
                   </p>
                   <span className="text-xs text-[#5d6486]">Stock {variant?.stockQty ?? 0}</span>
                 </div>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-2 gap-2">
                   <Link
                     className="rounded-lg border border-[#c9d6ff] px-3 py-2 text-center text-sm font-medium text-[#3d4d95]"
                     href={`/${locale}/product/${product.id}`}
                   >
                     Detail
                   </Link>
-                  <button
-                    className="rounded-lg border border-[#c9d6ff] bg-white px-3 py-2 text-sm font-semibold text-[#3d4d95]"
-                    onClick={() => onToggleWishlist(product)}
-                    type="button"
-                  >
-                    {saved ? 'Saved' : 'Save'}
-                  </button>
                   <button
                     className="btn-primary rounded-lg px-3 py-2 text-sm font-semibold"
                     onClick={() => onAddToCart(product)}
