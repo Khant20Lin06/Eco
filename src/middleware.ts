@@ -60,24 +60,21 @@ function roleRedirect(request: NextRequest, role: AppRole, locale: 'en' | 'my') 
 function unauthRedirect(request: NextRequest, locale: 'en' | 'my') {
   const pathname = request.nextUrl.pathname;
   const base = `/${locale}`;
-  const protectedPathPrefixes = [
-    `${base}/orders`,
-    `${base}/checkout`,
-    `${base}/vendor`,
-    `${base}/admin`,
-    `${base}/notifications`,
-    `${base}/chat`,
-    `${base}/wishlist`,
-  ];
-  const isProtectedPrefix = protectedPathPrefixes.some(
-    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)
-  );
-  const isProtected = isProtectedPrefix || pathname === `${base}/cart`;
-  if (!isProtected) {
+  const isHomePath = pathname === base || pathname === `${base}/`;
+  const isLoginPath = pathname === `${base}/login` || pathname === `${base}/login/`;
+  const isRegisterPath = pathname === `${base}/register` || pathname === `${base}/register/`;
+  const isVerifyPath =
+    pathname === `${base}/verify-email` || pathname === `${base}/verify-email/`;
+  const isPublicPath = isHomePath || isLoginPath || isRegisterPath || isVerifyPath;
+
+  if (isPublicPath) {
     return null;
   }
 
-  return NextResponse.redirect(new URL(`${base}/login`, request.url));
+  const loginUrl = new URL(`${base}/login`, request.url);
+  const requestedPath = `${request.nextUrl.pathname}${request.nextUrl.search}`;
+  loginUrl.searchParams.set('returnTo', requestedPath);
+  return NextResponse.redirect(loginUrl);
 }
 
 export default function middleware(request: NextRequest) {

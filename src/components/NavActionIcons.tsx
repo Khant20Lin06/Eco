@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   getCart,
   getUnreadChatCount,
@@ -92,6 +92,27 @@ export default function NavActionIcons({
   const [cartCount, setCartCount] = useState(0);
   const [notificationCount, setNotificationCount] = useState(0);
   const [chatUnreadCount, setChatUnreadCount] = useState(0);
+  const [countsLoading, setCountsLoading] = useState(false);
+  const hasLoadedCountsRef = useRef(false);
+
+  const renderBadge = (count: number) => {
+    if (!accessToken) {
+      return null;
+    }
+    if (countsLoading && !hasLoadedCountsRef.current) {
+      return (
+        <span className="absolute right-0 top-0 inline-flex h-4 w-4 animate-pulse rounded-full bg-[#c6d0f8]" />
+      );
+    }
+    if (count <= 0) {
+      return null;
+    }
+    return (
+      <span className="absolute right-0 top-0 inline-flex h-5 min-w-[18px] items-center justify-center rounded-full bg-[#e93a52] px-1 text-[10px] font-semibold text-white">
+        {count}
+      </span>
+    );
+  };
 
   const refreshCounts = useCallback(async () => {
     if (!accessToken) {
@@ -99,7 +120,13 @@ export default function NavActionIcons({
       setCartCount(0);
       setNotificationCount(0);
       setChatUnreadCount(0);
+      setCountsLoading(false);
+      hasLoadedCountsRef.current = false;
       return;
+    }
+
+    if (!hasLoadedCountsRef.current) {
+      setCountsLoading(true);
     }
 
     try {
@@ -120,6 +147,9 @@ export default function NavActionIcons({
       setCartCount(0);
       setNotificationCount(0);
       setChatUnreadCount(0);
+    } finally {
+      hasLoadedCountsRef.current = true;
+      setCountsLoading(false);
     }
   }, [accessToken]);
 
@@ -190,9 +220,7 @@ export default function NavActionIcons({
         href={notificationsHref}
         title="Notifications"
       >
-        <span className="absolute right-0 top-0 inline-flex h-5 min-w-[18px] items-center justify-center rounded-full bg-[#e93a52] px-1 text-[10px] font-semibold text-white">
-          {notificationCount}
-        </span>
+        {renderBadge(notificationCount)}
         <IconBell />
       </Link>
       <Link
@@ -201,23 +229,15 @@ export default function NavActionIcons({
         href={chatHref}
         title="Chat"
       >
-        {chatUnreadCount > 0 ? (
-          <span className="absolute right-0 top-0 inline-flex h-5 min-w-[18px] items-center justify-center rounded-full bg-[#e93a52] px-1 text-[10px] font-semibold text-white">
-            {chatUnreadCount}
-          </span>
-        ) : null}
+        {renderBadge(chatUnreadCount)}
         <IconMessage />
       </Link>
       <Link aria-label="Wishlist" className="relative inline-flex h-10 w-10 items-center justify-center rounded-full text-[#111] transition hover:bg-[#f1f1f1]" href={wishlistHref} title="Wishlist">
-        <span className="absolute right-0 top-0 inline-flex h-5 min-w-[18px] items-center justify-center rounded-full bg-[#e93a52] px-1 text-[10px] font-semibold text-white">
-          {wishlistCount}
-        </span>
+        {renderBadge(wishlistCount)}
         <IconHeart />
       </Link>
       <Link aria-label="Bag" className="relative inline-flex h-10 w-10 items-center justify-center rounded-full text-[#111] transition hover:bg-[#f1f1f1]" href={bagHref} title="Bag">
-        <span className="absolute right-0 top-0 inline-flex h-5 min-w-[18px] items-center justify-center rounded-full bg-[#e93a52] px-1 text-[10px] font-semibold text-white">
-          {cartCount}
-        </span>
+        {renderBadge(cartCount)}
         <IconBag />
       </Link>
     </div>

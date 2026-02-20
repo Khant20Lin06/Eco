@@ -42,6 +42,7 @@ type HomeProduct = {
 
 type HomeCatalogSectionProps = {
   locale: string;
+  isAuthed: boolean;
   categories: HomeCategory[];
   initialProducts: HomeProduct[];
   initialCurrency: AppCurrency;
@@ -89,6 +90,7 @@ function mapProduct(item: ProductItem): HomeProduct {
 
 export default function HomeCatalogSection({
   locale,
+  isAuthed,
   categories,
   initialProducts,
   initialCurrency,
@@ -320,6 +322,9 @@ export default function HomeCatalogSection({
     selectedCategoryId === ALL_CATEGORY_ID
       ? 'All Categories'
       : categoryOptions.find((category) => category.id === selectedCategoryId)?.name ?? 'Category';
+  const productsPageHref = isAuthed
+    ? `/${locale}/products`
+    : `/${locale}/login?returnTo=${encodeURIComponent(`/${locale}/products`)}`;
 
   const visibleProducts = useMemo(
     () =>
@@ -380,7 +385,7 @@ export default function HomeCatalogSection({
           <h2 className="text-2xl font-semibold text-[#181f46]">Products</h2>
           <div className="flex items-center gap-3">
             {loading ? <span className="text-xs font-medium text-[#5a6ba5]">Loading...</span> : null}
-            <Link className="text-sm font-semibold text-[#3550be] hover:underline" href={`/${locale}/products`}>
+            <Link className="text-sm font-semibold text-[#3550be] hover:underline" href={productsPageHref}>
               Browse full catalog
             </Link>
           </div>
@@ -468,7 +473,11 @@ export default function HomeCatalogSection({
                   )}
                   <Link
                     className="inline-flex rounded-lg border border-[#cad8ff] px-3 py-1.5 text-xs font-semibold text-[#3654c5]"
-                    href={`/${locale}/product/${product.id}`}
+                    href={
+                      isAuthed
+                        ? `/${locale}/product/${product.id}`
+                        : `/${locale}/login?returnTo=${encodeURIComponent(`/${locale}/product/${product.id}`)}`
+                    }
                   >
                     View Detail
                   </Link>

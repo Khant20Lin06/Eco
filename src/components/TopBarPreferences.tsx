@@ -11,6 +11,7 @@ import {
 type TopBarPreferencesProps = {
   locale: string;
   currency: AppCurrency;
+  tone?: 'dark' | 'light';
 };
 
 type AppLocale = 'en' | 'my';
@@ -34,7 +35,11 @@ function switchLocale(pathname: string, nextLocale: AppLocale): string {
   return `/${segments.join('/')}`;
 }
 
-export default function TopBarPreferences({ locale, currency }: TopBarPreferencesProps) {
+export default function TopBarPreferences({
+  locale,
+  currency,
+  tone = 'dark'
+}: TopBarPreferencesProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -61,11 +66,16 @@ export default function TopBarPreferences({ locale, currency }: TopBarPreference
     setClientCurrencyPreference(nextCurrency);
   }
 
+  const selectClassName =
+    tone === 'light'
+      ? 'h-8 rounded-lg border border-[#d2dcff] bg-white px-2 text-[11px] font-semibold text-[#1d2551] outline-none'
+      : 'h-7 rounded border border-white/25 bg-transparent px-2 text-[11px] font-semibold text-white outline-none';
+
   return (
     <div className="flex items-center gap-2 text-[11px]">
       <select
         aria-label="Language"
-        className="h-7 rounded border border-white/25 bg-transparent px-2 text-[11px] font-semibold text-white outline-none"
+        className={selectClassName}
         onChange={(event) => handleLocaleChange(event.target.value)}
         value={currentLocale}
       >
@@ -78,7 +88,7 @@ export default function TopBarPreferences({ locale, currency }: TopBarPreference
       </select>
       <select
         aria-label="Currency"
-        className="h-7 rounded border border-white/25 bg-transparent px-2 text-[11px] font-semibold text-white outline-none"
+        className={selectClassName}
         onChange={(event) => handleCurrencyChange(event.target.value)}
         value={currencyValue}
       >

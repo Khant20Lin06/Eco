@@ -5,6 +5,7 @@ import { AUTH_ROLE_COOKIE, AppRole } from '../lib/auth-shared';
 import { CURRENCY_PREFERENCE_COOKIE, normalizeCurrencyCode } from '../lib/preferences';
 import LogoutButton from './LogoutButton';
 import NavActionIcons from './NavActionIcons';
+import MobileNavDrawer from './nav/MobileNavDrawer';
 import TopBarPreferences from './TopBarPreferences';
 
 function IconSearch() {
@@ -44,23 +45,25 @@ export default async function Nav({ locale }: { locale: string }) {
   if (role === 'ADMIN') {
     return null;
   }
+
+  const loginHref = `/${locale}/login`;
+  const registerHref = `/${locale}/register`;
+  const withLoginReturnTo = (targetPath: string) =>
+    `${loginHref}?returnTo=${encodeURIComponent(targetPath)}`;
+  const protectedHref = (targetPath: string) =>
+    role ? targetPath : withLoginReturnTo(targetPath);
+
   const accountHref = getAccountHref(locale, role);
-  const chatHref = role ? `/${locale}/chat` : `/${locale}/login`;
-  const notificationsHref = role ? `/${locale}/notifications` : `/${locale}/login`;
-  const navMenu =
-    role === 'CUSTOMER' || role === 'VENDOR'
-      ? [
-          { href: `/${locale}`, label: t('home') },
-          { href: `/${locale}/products`, label: t('products') }
-        ]
-      : [
-          { href: `/${locale}`, label: t('home') },
-          { href: `/${locale}/products`, label: 'Shop' },
-          { href: `/${locale}/products`, label: t('products'), badge: 'Sale' },
-          { href: role ? accountHref : `/${locale}/login`, label: 'Pages' },
-          { href: `/${locale}`, label: 'Blogs' },
-          { href: role ? accountHref : `/${locale}/register`, label: 'Buy Theme' }
-        ];
+  const chatHref = protectedHref(`/${locale}/chat`);
+  const notificationsHref = protectedHref(`/${locale}/notifications`);
+  const wishlistHref = protectedHref(`/${locale}/wishlist`);
+  const bagHref = protectedHref(`/${locale}/cart`);
+  const productsHref = protectedHref(`/${locale}/products`);
+
+  const navMenu = [
+    { href: `/${locale}`, label: t('home') },
+    { href: productsHref, label: t('products') }
+  ];
 
   return (
     <header className="sticky top-0 z-40 border-b border-[#d8d8d8] bg-white text-[#111] shadow-[0_8px_18px_rgba(12,16,32,0.08)]">
@@ -86,7 +89,33 @@ export default async function Nav({ locale }: { locale: string }) {
         </div>
       </div>
 
-      <div className="mx-auto grid w-full max-w-[1400px] grid-cols-[auto_1fr_auto] items-center gap-4 px-4 py-4">
+      <div className="mx-auto flex w-full max-w-[1400px] items-center justify-between gap-3 px-4 py-4 lg:hidden">
+        <Link
+          className="pr-2 text-[32px] font-semibold leading-none tracking-tight text-black"
+          href={`/${locale}`}
+        >
+          Eco
+        </Link>
+        <MobileNavDrawer
+          accountHref={accountHref}
+          accountTitle={role ? 'Account' : t('login')}
+          bagHref={bagHref}
+          chatHref={chatHref}
+          isAuthed={Boolean(role)}
+          locale={locale}
+          loginHref={loginHref}
+          loginLabel={t('login')}
+          logoutLabel={t('logout')}
+          navLinks={navMenu}
+          notificationsHref={notificationsHref}
+          preferredCurrency={preferredCurrency}
+          registerHref={registerHref}
+          registerLabel={t('register')}
+          wishlistHref={wishlistHref}
+        />
+      </div>
+
+      <div className="mx-auto hidden w-full max-w-[1400px] grid-cols-[auto_1fr_auto] items-center gap-4 px-4 py-4 lg:grid">
         <Link
           className="pr-2 text-[32px] font-semibold leading-none tracking-tight text-black"
           href={`/${locale}`}
@@ -94,18 +123,13 @@ export default async function Nav({ locale }: { locale: string }) {
           Eco
         </Link>
 
-        <nav className="hidden items-center gap-8 lg:flex">
-          {navMenu.map((item, index) => (
+        <nav className="flex items-center gap-8">
+          {navMenu.map((item) => (
             <Link
-              key={`${item.label}-${index + 1}`}
-              className="relative text-[18px] font-medium text-[#131313] hover:text-[#3150ad]"
+              key={item.label}
+              className="text-[18px] font-medium text-[#131313] hover:text-[#3150ad]"
               href={item.href}
             >
-              {item.badge ? (
-                <span className="absolute -top-5 right-0 rounded bg-[#e93a52] px-1.5 py-0.5 text-[9px] font-semibold uppercase leading-none text-white">
-                  {item.badge}
-                </span>
-              ) : null}
               {item.label}
             </Link>
           ))}
@@ -134,10 +158,10 @@ export default async function Nav({ locale }: { locale: string }) {
           <NavActionIcons
             accountHref={accountHref}
             accountTitle={role ? 'Account' : t('login')}
-            bagHref={`/${locale}/cart`}
+            bagHref={bagHref}
             chatHref={chatHref}
             notificationsHref={notificationsHref}
-            wishlistHref={role ? `/${locale}/wishlist` : `/${locale}/login`}
+            wishlistHref={wishlistHref}
           />
         </div>
       </div>

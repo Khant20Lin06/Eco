@@ -48,7 +48,10 @@ function handleUnauthorized(path: string) {
 
   unauthorizedRedirectStarted = true;
   clearClientAuthCookies();
-  window.location.replace(paths.login);
+  const returnTo = `${window.location.pathname}${window.location.search}`;
+  const loginUrl = new URL(paths.login, window.location.origin);
+  loginUrl.searchParams.set('returnTo', returnTo);
+  window.location.replace(loginUrl.toString());
 }
 
 function toQueryString(

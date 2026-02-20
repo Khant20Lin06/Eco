@@ -39,10 +39,12 @@ export default function HomeSummaryCollections({
 }: HomeSummaryCollectionsProps) {
   const [categories, setCategories] = useState<HomeCategory[]>([]);
   const [products, setProducts] = useState<HomeProduct[]>([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let alive = true;
+    setLoading(true);
     Promise.all([
       listCategories({ locale }),
       listProducts({ limit: 50, locale })
@@ -69,6 +71,11 @@ export default function HomeSummaryCollections({
         setCategories([]);
         setProducts([]);
         setError('Failed to load collections.');
+      })
+      .finally(() => {
+        if (alive) {
+          setLoading(false);
+        }
       });
 
     return () => {
@@ -81,6 +88,9 @@ export default function HomeSummaryCollections({
     [products]
   );
   const categoryItems = categories.slice(0, 14);
+  const withLoginReturnTo = (targetPath: string) =>
+    `/${locale}/login?returnTo=${encodeURIComponent(targetPath)}`;
+  const protectedHref = (targetPath: string) => (isAuthed ? targetPath : withLoginReturnTo(targetPath));
 
   const collectionCards = useMemo(() => {
     const firstProductByCategory = new Map<string, HomeProduct>();
@@ -105,11 +115,19 @@ export default function HomeSummaryCollections({
       <div className="surface grid gap-3 p-4 sm:grid-cols-3">
         <div className="rounded-xl border border-[#dbe2ff] bg-white p-3">
           <p className="text-xs uppercase tracking-wide text-[#5d6486]">Products</p>
-          <p className="mt-1 text-xl font-semibold text-[#1b2452]">{activeProducts.length}</p>
+          {loading ? (
+            <div className="mt-2 h-6 w-16 animate-pulse rounded bg-[#e8eeff]" />
+          ) : (
+            <p className="mt-1 text-xl font-semibold text-[#1b2452]">{activeProducts.length}</p>
+          )}
         </div>
         <div className="rounded-xl border border-[#dbe2ff] bg-white p-3">
           <p className="text-xs uppercase tracking-wide text-[#5d6486]">Categories</p>
-          <p className="mt-1 text-xl font-semibold text-[#1b2452]">{categoryItems.length}</p>
+          {loading ? (
+            <div className="mt-2 h-6 w-14 animate-pulse rounded bg-[#e8eeff]" />
+          ) : (
+            <p className="mt-1 text-xl font-semibold text-[#1b2452]">{categoryItems.length}</p>
+          )}
         </div>
         <div className="rounded-xl border border-[#dbe2ff] bg-white p-3">
           <p className="text-xs uppercase tracking-wide text-[#5d6486]">{isAuthed ? 'Account' : 'Signup'}</p>
@@ -131,33 +149,47 @@ export default function HomeSummaryCollections({
             <h2 className="text-2xl font-semibold text-[#181f46]">Popular Collections</h2>
             <p className="text-sm text-[#60709b]">Pick from our best-selling product clusters.</p>
           </div>
-          <Link className="text-sm font-semibold text-[#3550be] hover:underline" href={`/${locale}/products`}>
+          <Link className="text-sm font-semibold text-[#3550be] hover:underline" href={protectedHref(`/${locale}/products`)}>
             View all collections
           </Link>
         </div>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-          {collectionCards.map((card) => (
-            <Link
-              key={card.id}
-              href={`/${locale}/products?categoryId=${card.id}`}
-              className="surface group block overflow-hidden p-3 transition-all hover:-translate-y-1 hover:shadow-[0_14px_30px_rgba(29,49,119,0.14)]"
-            >
-              <div className="h-28 overflow-hidden rounded-xl bg-gradient-to-br from-[#d7e5ff] to-[#f2f7ff]">
-                {card.imageUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    alt={card.name}
-                    className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                    src={card.imageUrl}
-                  />
-                ) : (
-                  <div className="grid h-full place-items-center text-xs font-semibold text-[#4a5a94]">{card.name}</div>
-                )}
+        {loading ? (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+            {Array.from({ length: 6 }).map((_, index) => (
+              <div
+                key={`collection-skeleton-${index + 1}`}
+                className="surface overflow-hidden p-3"
+              >
+                <div className="h-28 animate-pulse rounded-xl bg-[#e8eeff]" />
+                <div className="mt-3 h-4 w-24 animate-pulse rounded bg-[#ecf1ff]" />
               </div>
-              <p className="mt-3 text-sm font-semibold text-[#1c2453]">{card.name}</p>
-            </Link>
-          ))}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+            {collectionCards.map((card) => (
+              <Link
+                key={card.id}
+                href={protectedHref(`/${locale}/products?categoryId=${card.id}`)}
+                className="surface group block overflow-hidden p-3 transition-all hover:-translate-y-1 hover:shadow-[0_14px_30px_rgba(29,49,119,0.14)]"
+              >
+                <div className="h-28 overflow-hidden rounded-xl bg-gradient-to-br from-[#d7e5ff] to-[#f2f7ff]">
+                  {card.imageUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      alt={card.name}
+                      className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      src={card.imageUrl}
+                    />
+                  ) : (
+                    <div className="grid h-full place-items-center text-xs font-semibold text-[#4a5a94]">{card.name}</div>
+                  )}
+                </div>
+                <p className="mt-3 text-sm font-semibold text-[#1c2453]">{card.name}</p>
+              </Link>
+            ))}
+          </div>
+        )}
         {error ? <p className="text-sm text-[#b63a52]">{error}</p> : null}
       </section>
     </>

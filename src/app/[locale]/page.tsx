@@ -95,6 +95,7 @@ export default async function HomePage({ params: { locale } }: HomePageProps) {
         categories={[]}
         initialCurrency={preferredCurrency}
         initialProducts={[]}
+        isAuthed={isAuthed}
         locale={locale}
       />
 
