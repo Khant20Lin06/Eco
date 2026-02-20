@@ -2,14 +2,26 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { FormEvent, useEffect, useMemo, useState } from 'react';
+import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  getCart,
+  getUnreadChatCount,
+  getUnreadNotificationsCount,
+  listWishlist
+} from '../../lib/api';
+import { useAuthSession } from '../../lib/hooks/use-auth-session';
 import { AppCurrency } from '../../lib/preferences';
+import { HEADER_COUNTS_REFRESH_EVENT } from '../../lib/ui-events';
 import LogoutButton from '../LogoutButton';
 import TopBarPreferences from '../TopBarPreferences';
 
 type MobileNavLink = {
   href: string;
   label: string;
+};
+
+type CartResponse = {
+  items?: Array<{ qty?: number }>;
 };
 
 type MobileNavDrawerProps = {
@@ -74,8 +86,14 @@ export default function MobileNavDrawer({
   registerLabel,
   logoutLabel
 }: MobileNavDrawerProps) {
+  const { accessToken } = useAuthSession();
   const [open, setOpen] = useState(false);
   const [searchText, setSearchText] = useState('');
+  const [wishlistCount, setWishlistCount] = useState(0);
+  const [cartCount, setCartCount] = useState(0);
+  const [notificationCount, setNotificationCount] = useState(0);
+  const [chatUnreadCount, setChatUnreadCount] = useState(0);
+  const [countsLoading, setCountsLoading] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
   const drawerId = useMemo(() => `mobile-nav-drawer-${locale}`, [locale]);
@@ -105,6 +123,58 @@ export default function MobileNavDrawer({
     };
   }, [open]);
 
+  const refreshCounts = useCallback(async () => {
+    if (!accessToken) {
+      setWishlistCount(0);
+      setCartCount(0);
+      setNotificationCount(0);
+      setChatUnreadCount(0);
+      setCountsLoading(false);
+      return;
+    }
+
+    setCountsLoading(true);
+    try {
+      const [wishlistRes, cartRes, unreadRes, unreadChatRes] = await Promise.all([
+        listWishlist(accessToken),
+        getCart<CartResponse>(accessToken),
+        getUnreadNotificationsCount(accessToken),
+        getUnreadChatCount(accessToken)
+      ]);
+      setWishlistCount(wishlistRes.items.length);
+      setCartCount(cartRes.items?.reduce((sum, item) => sum + (item.qty ?? 0), 0) ?? 0);
+      setNotificationCount(unreadRes.count ?? 0);
+      setChatUnreadCount(unreadChatRes.count ?? 0);
+    } catch {
+      setWishlistCount(0);
+      setCartCount(0);
+      setNotificationCount(0);
+      setChatUnreadCount(0);
+    } finally {
+      setCountsLoading(false);
+    }
+  }, [accessToken]);
+
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+    void refreshCounts();
+  }, [open, refreshCounts]);
+
+  useEffect(() => {
+    if (!open) {
+      return undefined;
+    }
+    const handler = () => {
+      void refreshCounts();
+    };
+    window.addEventListener(HEADER_COUNTS_REFRESH_EVENT, handler);
+    return () => {
+      window.removeEventListener(HEADER_COUNTS_REFRESH_EVENT, handler);
+    };
+  }, [open, refreshCounts]);
+
   function onSearchSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const query = searchText.trim();
@@ -117,6 +187,20 @@ export default function MobileNavDrawer({
 
     setOpen(false);
     router.push(target);
+  }
+
+  function renderCountBadge(count: number) {
+    if (!isAuthed) {
+      return null;
+    }
+    if (countsLoading) {
+      return <span className="h-5 w-8 animate-pulse rounded-full bg-[#d9e2ff]" />;
+    }
+    return (
+      <span className="inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-[#e93a52] px-1 text-[10px] font-semibold text-white">
+        {count}
+      </span>
+    );
   }
 
   return (
@@ -240,32 +324,36 @@ export default function MobileNavDrawer({
                 {accountTitle}
               </Link>
               <Link
-                className="rounded-lg border border-[#e2e8ff] px-3 py-2 text-sm font-semibold text-[#23306b] hover:border-[#b8c8ff] hover:bg-[#f5f8ff]"
+                className="flex items-center justify-between rounded-lg border border-[#e2e8ff] px-3 py-2 text-sm font-semibold text-[#23306b] hover:border-[#b8c8ff] hover:bg-[#f5f8ff]"
                 href={notificationsHref}
                 onClick={() => setOpen(false)}
               >
-                Notifications
+                <span>Notifications</span>
+                {renderCountBadge(notificationCount)}
               </Link>
               <Link
-                className="rounded-lg border border-[#e2e8ff] px-3 py-2 text-sm font-semibold text-[#23306b] hover:border-[#b8c8ff] hover:bg-[#f5f8ff]"
+                className="flex items-center justify-between rounded-lg border border-[#e2e8ff] px-3 py-2 text-sm font-semibold text-[#23306b] hover:border-[#b8c8ff] hover:bg-[#f5f8ff]"
                 href={chatHref}
                 onClick={() => setOpen(false)}
               >
-                Chat
+                <span>Chat</span>
+                {renderCountBadge(chatUnreadCount)}
               </Link>
               <Link
-                className="rounded-lg border border-[#e2e8ff] px-3 py-2 text-sm font-semibold text-[#23306b] hover:border-[#b8c8ff] hover:bg-[#f5f8ff]"
+                className="flex items-center justify-between rounded-lg border border-[#e2e8ff] px-3 py-2 text-sm font-semibold text-[#23306b] hover:border-[#b8c8ff] hover:bg-[#f5f8ff]"
                 href={wishlistHref}
                 onClick={() => setOpen(false)}
               >
-                Wishlist
+                <span>Wishlist</span>
+                {renderCountBadge(wishlistCount)}
               </Link>
               <Link
-                className="col-span-2 rounded-lg border border-[#e2e8ff] px-3 py-2 text-sm font-semibold text-[#23306b] hover:border-[#b8c8ff] hover:bg-[#f5f8ff]"
+                className="col-span-2 flex items-center justify-between rounded-lg border border-[#e2e8ff] px-3 py-2 text-sm font-semibold text-[#23306b] hover:border-[#b8c8ff] hover:bg-[#f5f8ff]"
                 href={bagHref}
                 onClick={() => setOpen(false)}
               >
-                Cart
+                <span>Cart</span>
+                {renderCountBadge(cartCount)}
               </Link>
             </div>
           </div>

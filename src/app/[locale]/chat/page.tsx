@@ -134,12 +134,34 @@ export default function ChatPage({ params: { locale } }: ChatPageProps) {
   const [sending, setSending] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [currentUsername, setCurrentUsername] = useState<string>('You');
+  const [isLargeScreen, setIsLargeScreen] = useState(false);
+  const [mobileShowMessages, setMobileShowMessages] = useState(false);
 
   const {
     connected,
     messages,
     setMessages,
   } = useOrderChatRealtime(accessToken, activeOrderId);
+
+  useEffect(() => {
+    const media = window.matchMedia('(min-width: 1024px)');
+    const update = () => {
+      setIsLargeScreen(media.matches);
+    };
+    update();
+
+    const handler = () => update();
+    media.addEventListener('change', handler);
+    return () => {
+      media.removeEventListener('change', handler);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (isLargeScreen) {
+      setMobileShowMessages(false);
+    }
+  }, [isLargeScreen]);
 
   useEffect(() => {
     if (initialOrderId) {
@@ -270,6 +292,15 @@ export default function ChatPage({ params: { locale } }: ChatPageProps) {
     () => threads.find((item) => item.orderId === activeOrderId),
     [threads, activeOrderId],
   );
+  const showThreadListPanel = isLargeScreen || !mobileShowMessages;
+  const showMessagesPanel = isLargeScreen || mobileShowMessages;
+
+  function onSelectThread(orderId: string) {
+    setActiveOrderId(orderId);
+    if (!isLargeScreen) {
+      setMobileShowMessages(true);
+    }
+  }
 
   async function onSend() {
     if (!accessToken || !activeOrderId || !draft.trim()) {
@@ -346,7 +377,7 @@ export default function ChatPage({ params: { locale } }: ChatPageProps) {
       ) : null}
 
       <div className="grid gap-4 lg:grid-cols-[340px_1fr]">
-        <aside className="surface p-3">
+        <aside className={`surface p-3 ${showThreadListPanel ? '' : 'hidden lg:block'}`}>
           <h2 className="px-2 py-2 text-sm font-semibold uppercase tracking-wide text-[#6070a6]">
             Threads
           </h2>
@@ -362,7 +393,7 @@ export default function ChatPage({ params: { locale } }: ChatPageProps) {
                   <button
                     key={thread.id}
                     type="button"
-                    onClick={() => setActiveOrderId(thread.orderId)}
+                    onClick={() => onSelectThread(thread.orderId)}
                     className={`w-full rounded-xl border px-3 py-2 text-left transition ${
                       activeOrderId === thread.orderId
                         ? 'border-[#9db5ff] bg-[#f2f6ff]'
@@ -393,11 +424,29 @@ export default function ChatPage({ params: { locale } }: ChatPageProps) {
           )}
         </aside>
 
-        <div className="surface flex min-h-[560px] flex-col p-4">
+        <div className={`surface flex min-h-[560px] flex-col p-4 ${showMessagesPanel ? '' : 'hidden lg:flex'}`}>
           {activeOrderId ? (
             <>
               <div className="flex items-center justify-between gap-2 border-b border-[#e1e7ff] pb-3">
                 <div className="flex items-center gap-3">
+                  {!isLargeScreen ? (
+                    <button
+                      className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[#c6d5ff] bg-white text-[#3349ad]"
+                      onClick={() => setMobileShowMessages(false)}
+                      type="button"
+                      aria-label="Back to threads"
+                    >
+                      <svg aria-hidden="true" className="h-4 w-4" fill="none" viewBox="0 0 24 24">
+                        <path
+                          d="M15 18l-6-6 6-6"
+                          stroke="currentColor"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="1.8"
+                        />
+                      </svg>
+                    </button>
+                  ) : null}
                   <Avatar
                     name={activeThread?.vendor?.name ?? `Order ${activeOrderId.slice(0, 8)}`}
                     size={42}

@@ -15,7 +15,7 @@ import { HEADER_COUNTS_REFRESH_EVENT } from '../lib/ui-events';
 
 function IconUser() {
   return (
-    <svg aria-hidden="true" className="h-4 w-4" fill="none" viewBox="0 0 24 24">
+    <svg aria-hidden="true" className="h-5 w-5" fill="none" viewBox="0 0 24 24">
       <path d="M20 21a8 8 0 0 0-16 0M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
     </svg>
   );
@@ -23,7 +23,7 @@ function IconUser() {
 
 function IconHeart() {
   return (
-    <svg aria-hidden="true" className="h-4 w-4" fill="none" viewBox="0 0 24 24">
+    <svg aria-hidden="true" className="h-5 w-5" fill="none" viewBox="0 0 24 24">
       <path d="m20.84 4.61-.01-.01a5.5 5.5 0 0 0-7.78 0L12 5.65l-1.05-1.04a5.5 5.5 0 0 0-7.78 7.78l1.05 1.04L12 21l7.78-7.57 1.05-1.04a5.5 5.5 0 0 0 .01-7.78z" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
     </svg>
   );
@@ -31,7 +31,7 @@ function IconHeart() {
 
 function IconBag() {
   return (
-    <svg aria-hidden="true" className="h-4 w-4" fill="none" viewBox="0 0 24 24">
+    <svg aria-hidden="true" className="h-5 w-5" fill="none" viewBox="0 0 24 24">
       <path d="M6 7h12l-1 13H7L6 7zm3 0V5a3 3 0 1 1 6 0v2" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
     </svg>
   );
@@ -39,7 +39,7 @@ function IconBag() {
 
 function IconBell() {
   return (
-    <svg aria-hidden="true" className="h-4 w-4" fill="none" viewBox="0 0 24 24">
+    <svg aria-hidden="true" className="h-5 w-5" fill="none" viewBox="0 0 24 24">
       <path
         d="M15 18H5l1.5-1.5v-5a5.5 5.5 0 0 1 11 0v5L19 18h-4m0 0a3 3 0 1 1-6 0h6z"
         stroke="currentColor"
@@ -53,7 +53,7 @@ function IconBell() {
 
 function IconMessage() {
   return (
-    <svg aria-hidden="true" className="h-4 w-4" fill="none" viewBox="0 0 24 24">
+    <svg aria-hidden="true" className="h-5 w-5" fill="none" viewBox="0 0 24 24">
       <path
         d="M6 8h12M6 12h8m-8 8 3.8-3H18a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2z"
         stroke="currentColor"
@@ -211,12 +211,12 @@ export default function NavActionIcons({
 
   return (
     <div className="flex items-center gap-3">
-      <Link aria-label={accountTitle} className="inline-flex h-10 w-10 items-center justify-center rounded-full text-[#111] transition hover:bg-[#f1f1f1]" href={accountHref} title={accountTitle}>
+      <Link aria-label={accountTitle} className="inline-flex h-11 w-11 items-center justify-center rounded-full text-[#111] transition hover:bg-[#f1f1f1]" href={accountHref} title={accountTitle}>
         <IconUser />
       </Link>
       <Link
         aria-label="Notifications"
-        className="relative inline-flex h-10 w-10 items-center justify-center rounded-full text-[#111] transition hover:bg-[#f1f1f1]"
+        className="relative inline-flex h-11 w-11 items-center justify-center rounded-full text-[#111] transition hover:bg-[#f1f1f1]"
         href={notificationsHref}
         title="Notifications"
       >
@@ -225,18 +225,18 @@ export default function NavActionIcons({
       </Link>
       <Link
         aria-label="Chat"
-        className="relative inline-flex h-10 w-10 items-center justify-center rounded-full text-[#111] transition hover:bg-[#f1f1f1]"
+        className="relative inline-flex h-11 w-11 items-center justify-center rounded-full text-[#111] transition hover:bg-[#f1f1f1]"
         href={chatHref}
         title="Chat"
       >
         {renderBadge(chatUnreadCount)}
         <IconMessage />
       </Link>
-      <Link aria-label="Wishlist" className="relative inline-flex h-10 w-10 items-center justify-center rounded-full text-[#111] transition hover:bg-[#f1f1f1]" href={wishlistHref} title="Wishlist">
+      <Link aria-label="Wishlist" className="relative inline-flex h-11 w-11 items-center justify-center rounded-full text-[#111] transition hover:bg-[#f1f1f1]" href={wishlistHref} title="Wishlist">
         {renderBadge(wishlistCount)}
         <IconHeart />
       </Link>
-      <Link aria-label="Bag" className="relative inline-flex h-10 w-10 items-center justify-center rounded-full text-[#111] transition hover:bg-[#f1f1f1]" href={bagHref} title="Bag">
+      <Link aria-label="Bag" className="relative inline-flex h-11 w-11 items-center justify-center rounded-full text-[#111] transition hover:bg-[#f1f1f1]" href={bagHref} title="Bag">
         {renderBadge(cartCount)}
         <IconBag />
       </Link>
