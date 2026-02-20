@@ -12,7 +12,7 @@ type LoginPageProps = {
   params: { locale: string };
 };
 
-function isSafeReturnPath(value: string | null) {
+function isSafeReturnPath(value: string | null): value is string {
   if (!value) {
     return false;
   }
